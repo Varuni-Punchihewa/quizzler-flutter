@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'quiz_bank.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() => runApp(Quizzler());
 
@@ -15,6 +17,7 @@ class Quizzler extends StatelessWidget {
           ),
         ),
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -25,6 +28,42 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  static List<Expanded> scoreKeeper = [];
+  QuizBank quizBank = QuizBank();
+  int tracker = 0;
+
+  void addIcon(bool userAnswer) {
+    if (tracker < quizBank.getLength() - 1) {
+      if (quizBank.getAnswer(tracker) == userAnswer) {
+        scoreKeeper.add(Expanded(
+          child: Icon(
+            Icons.check,
+            color: Colors.green,
+          ),
+        ));
+      } else {
+        scoreKeeper.add(Expanded(
+          child: Icon(
+            Icons.close,
+            color: Colors.red,
+          ),
+        ));
+      }
+      tracker++;
+    }
+  }
+
+  showAlert() {
+    Alert(
+            context: context,
+            title: "ALERT",
+            desc: "You have reached the end of the Quiz.")
+        .show();
+
+    tracker = 0;
+    scoreKeeper = [];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,7 +76,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                quizBank.getQuestion(tracker),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -61,7 +100,12 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                //The user picked true.
+                setState(() {
+                  addIcon(true);
+                  if (tracker == quizBank.getLength() - 1) {
+                    showAlert();
+                  }
+                });
               },
             ),
           ),
@@ -79,12 +123,17 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                //The user picked false.
+                setState(() {
+                  addIcon(false);
+                });
               },
             ),
           ),
         ),
         //TODO: Add a Row here as your score keeper
+        Row(
+          children: scoreKeeper,
+        ),
       ],
     );
   }
